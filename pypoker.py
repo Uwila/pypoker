@@ -1,8 +1,23 @@
 from random import sample, choice
 import re
 
+all_suits = ['clubs', 'diamonds', 'hearts', 'spades']
+all_ranks = ['ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king']
+
 raise_regex = re.compile('raise (\d+)')
 
+def get_raise_amount(string):
+    return int(raise_regex.match(string).group(1))    
+
+def get_hand_values(table, hands):
+    return {player:get_hand_value(table + hands.get(player)) for player in hands.keys()}
+
+def get_hand_value(hand):
+    return 0
+
+def get_flush(hand):
+    for suit in all_suits:
+        if 
 
 class Card:
     def __init__(self, suit, rank):
@@ -13,9 +28,8 @@ class Card:
 class Deck:
     def __init__(self):
         self.cards = []
-        for suit in ['clubs', 'diamonds', 'hearts', 'spades']:
-            for rank in ['ace', '2', '3', '4', '5', '6', '7',
-                         '8', '9', '10', 'jack', 'queen', 'king']:
+        for suit in all_suits:
+            for rank in all_ranks:
                 self.cards.append(Card(suit,rank))
 
     def pull_card(self):
@@ -47,7 +61,7 @@ class Player:
 
         answer = ''
         # TODO: Do not allow raises downwards
-        while answer not in ['fold', option] and raise_regex.match(answer) is None:
+        while answer not in ['fold', option] and (raise_regex.match(answer) is None or get_raise_amount(string) < min(stakes.values())):
             answer = input('Type: "fold", "{}", or "raise [to amount]"'.format(option))
         return answer
 
@@ -70,7 +84,7 @@ class Game:
         elif move == 'match':
             self.stakes[p] = max(self.stakes.values())
         elif move != 'check':
-            self.stakes[p] = int(raise_regex.match(move).group(1))
+            self.stakes[p] = get_raise_amount(move)
 
 
     def play_round(self):
@@ -83,6 +97,13 @@ class Game:
                     move = p.get_move(self.table, self.hands.get(p), self.stakes)
                     self.register_move(p,move)
 
+    def get_outcome(self):
+        if len(self.active_players) == 1:
+            print('{} wins, being the only active player'.format(self.active_players[0].name))
+            winner = active_players[0]
+        else:
+            hands = get_hand_values(self.table, [p:h for p,h in self.hands.items() if p in self.active_players])
+
 
     def play(self):
         self.play_round()
@@ -92,8 +113,10 @@ class Game:
         self.play_round()
         self.table.append(self.deck.pull_card())
         self.play_round()
+        self.get_outcome()
 
 
 p1 = Player('Lars', 100)
 p2 = Player('Tim', 200)
 g = Game([p1,p2])
+g.play()
